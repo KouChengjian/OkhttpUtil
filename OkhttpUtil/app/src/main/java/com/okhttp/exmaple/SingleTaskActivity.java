@@ -49,8 +49,8 @@ public class SingleTaskActivity extends AppCompatActivity {
         mRestart = (TextView) findViewById(R.id.restart);
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
 
-        final String name = "消消乐";
-        url = "http://1.198.5.22/imtt.dd.qq.com/16891/8EEC7D8996760973B5CEA15ECA1700E3.apk";
+        final String name = "消消乐11";
+        url = "http://1.82.242.43/imtt.dd.qq.com/16891/DC9E925209B19E7913477E7A0CCE6E52.apk";
 
         downloadManger = DUtil.init(mContext)
                 .url(url)
@@ -92,8 +92,8 @@ public class SingleTaskActivity extends AppCompatActivity {
                         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         intent.setDataAndType(uri, "application/vnd.android.package-archive");
-                        startActivity(intent);
-                    }
+                    startActivity(intent);
+                }
 
                     @Override
                     public void onWait() {

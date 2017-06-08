@@ -44,10 +44,80 @@ public class DownloadProgressHandler {
 
     private long lastProgressTime;
 
-    private Handler mHandler = new Handler() {
+    private MyHandler mHandler = null;
+
+    public DownloadProgressHandler(Context context, DownLoad downloadData, Callback downloadCallback) {
+        this.context = context;
+        this.downloadCallback = downloadCallback;
+
+        this.url = downloadData.getUrl();
+        this.path = downloadData.getPath();
+        this.name = downloadData.getName();
+        this.childTaskCount = downloadData.getChildTaskCount();
+
+        DownLoad dbData = CacheUtils.getInstance(context).getData(url);
+        this.downloadData = dbData == null ? downloadData : dbData;
+
+        mHandler = new MyHandler(context);
+    }
+
+    public Handler getHandler() {
+        return mHandler;
+    }
+
+    public int getCurrentState() {
+        return mCurrentState;
+    }
+
+    public DownLoad getDownloadData() {
+        return downloadData;
+    }
+
+    public void setFileTask(DownloadFileTask fileTask) {
+        this.fileTask = fileTask;
+    }
+
+    /**
+     * 下载中退出时保存数据、释放资源
+     */
+    public void destroy() {
+        if (mCurrentState == Constant.CANCEL || mCurrentState == Constant.PAUSE) {
+            return;
+        }
+        fileTask.destroy();
+    }
+
+    /**
+     * 暂停（正在下载才可以暂停）
+     * 如果文件不支持断点续传则不能进行暂停操作
+     */
+    public void pause() {
+        if (mCurrentState == Constant.PROGRESS) {
+            fileTask.pause();
+        }
+    }
+
+    /**
+     * 取消（已经被取消、下载结束则不可取消）
+     */
+    public void cancel(boolean isNeedRestart) {
+        this.isNeedRestart = isNeedRestart;
+        if (mCurrentState == Constant.PROGRESS) {
+            fileTask.cancel();
+        } else if (mCurrentState == Constant.PAUSE || mCurrentState == Constant.ERROR) {
+            mHandler.sendEmptyMessage(Constant.CANCEL);
+        }
+    }
+
+    class MyHandler extends Handler {
+
+        public MyHandler(Context context) {
+            super(context.getMainLooper());
+        }
 
         @Override
         public void handleMessage(Message msg) {
+            super.handleMessage(msg);
             super.handleMessage(msg);
 
             int mLastSate = mCurrentState;
@@ -151,67 +221,6 @@ public class DownloadProgressHandler {
                     }
                     break;
             }
-        }
-    };
-
-    public DownloadProgressHandler(Context context, DownLoad downloadData, Callback downloadCallback) {
-        this.context = context;
-        this.downloadCallback = downloadCallback;
-
-        this.url = downloadData.getUrl();
-        this.path = downloadData.getPath();
-        this.name = downloadData.getName();
-        this.childTaskCount = downloadData.getChildTaskCount();
-
-        DownLoad dbData = CacheUtils.getInstance(context).getData(url);
-        this.downloadData = dbData == null ? downloadData : dbData;
-    }
-
-    public Handler getHandler() {
-        return mHandler;
-    }
-
-    public int getCurrentState() {
-        return mCurrentState;
-    }
-
-    public DownLoad getDownloadData() {
-        return downloadData;
-    }
-
-    public void setFileTask(DownloadFileTask fileTask) {
-        this.fileTask = fileTask;
-    }
-
-    /**
-     * 下载中退出时保存数据、释放资源
-     */
-    public void destroy() {
-        if (mCurrentState == Constant.CANCEL || mCurrentState == Constant.PAUSE) {
-            return;
-        }
-        fileTask.destroy();
-    }
-
-    /**
-     * 暂停（正在下载才可以暂停）
-     * 如果文件不支持断点续传则不能进行暂停操作
-     */
-    public void pause() {
-        if (mCurrentState == Constant.PROGRESS) {
-            fileTask.pause();
-        }
-    }
-
-    /**
-     * 取消（已经被取消、下载结束则不可取消）
-     */
-    public void cancel(boolean isNeedRestart) {
-        this.isNeedRestart = isNeedRestart;
-        if (mCurrentState == Constant.PROGRESS) {
-            fileTask.cancel();
-        } else if (mCurrentState == Constant.PAUSE || mCurrentState == Constant.ERROR) {
-            mHandler.sendEmptyMessage(Constant.CANCEL);
         }
     }
 }

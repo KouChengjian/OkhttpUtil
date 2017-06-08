@@ -1,5 +1,6 @@
 package com.okhttp.utils;
 
+import java.util.Comparator;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -15,9 +16,9 @@ public class ThreadPool {
     //可同时下载的任务数（核心线程数）
     private int CORE_POOL_SIZE = 3;
     //缓存队列的大小（最大线程数）
-    private int MAX_POOL_SIZE = 20;
+    private int MAX_POOL_SIZE = 256;
     //非核心线程闲置的超时时间（秒），如果超时则会被回收
-    private long KEEP_ALIVE = 10L;
+    private int KEEP_ALIVE = 1;
 
     private ThreadPoolExecutor THREAD_POOL_EXECUTOR;
 
@@ -66,8 +67,10 @@ public class ThreadPool {
     public ThreadPoolExecutor getThreadPoolExecutor() {
         if (THREAD_POOL_EXECUTOR == null) {
             THREAD_POOL_EXECUTOR = new ThreadPoolExecutor(
-                    CORE_POOL_SIZE, MAX_POOL_SIZE,
-                    KEEP_ALIVE, TimeUnit.SECONDS,
+                    CORE_POOL_SIZE,
+                    MAX_POOL_SIZE,
+                    KEEP_ALIVE,
+                    TimeUnit.SECONDS,
                     new LinkedBlockingDeque<Runnable>(),
                     sThreadFactory);
         }

@@ -73,6 +73,33 @@ public class OkHttpManager {
         return builder.build().newCall(request).execute();
     }
 
+    public Call initRequest1(String url, long start, long end) {
+        Request request = new Request.Builder()
+                .url(url)
+                .header("Range", "bytes=" + start + "-" + end)
+                .build();
+        Call call = builder.build().newCall(request);
+        return call;
+    }
+
+    public Call initRequest1(String url) throws IOException {
+        Request request = new Request.Builder()
+                .url(url)
+                .header("Range", "bytes=0-")
+                .build();
+        return builder.build().newCall(request);
+    }
+
+    public Call initRequest1(String url, String lastModify) throws IOException {
+        Request request = new Request.Builder()
+                .url(url)
+                .header("Range", "bytes=0-")
+                .header("If-Range", lastModify)
+                .build();
+
+        return builder.build().newCall(request);
+    }
+
     /**
      * https请求时初始化证书
      */

@@ -29,8 +29,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         taskUp = (Button) findViewById(R.id.service_task_upLoad);
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     Toast.makeText(this, "下载需要文件存储的权限!", Toast.LENGTH_SHORT).show();
                 } else {

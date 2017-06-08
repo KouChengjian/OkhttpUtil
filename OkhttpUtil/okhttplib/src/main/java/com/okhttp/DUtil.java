@@ -2,7 +2,6 @@ package com.okhttp;
 
 import android.content.Context;
 
-import com.okhttp.net.Upload.UploadManger;
 import com.okhttp.net.download.DownloadManger;
 
 /**
@@ -145,10 +144,10 @@ public class DUtil {
             return this;
         }
 
-        public UploadManger build() {
-            UploadManger uploadManger = UploadManger.getInstance(context);
-            uploadManger.init(url, path, name, childTaskCount);
-            return uploadManger;
-        }
+//        public UploadManger build() {
+//            UploadManger uploadManger = UploadManger.getInstance(context);
+//            uploadManger.init(url, path, name, childTaskCount);
+//            return uploadManger;
+//        }
     }
 }

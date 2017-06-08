@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 
 import com.okhttp.bean.DownLoad;
 import com.okhttp.bean.Ranges;
@@ -69,20 +70,22 @@ public class DownloadFileTask implements Runnable {
             File tempFile = new File(path, name + ".temp");
             DownLoad data = CacheUtils.getInstance(context).getData(url);
             if (IOUtils.isFileExists(saveFile) && IOUtils.isFileExists(tempFile) && data != null) {
-                Response response = OkHttpManager.getInstance().initRequest(url, data.getLastModify());
+                Call call = OkHttpManager.getInstance().initRequest1(url, data.getLastModify());
+                Response response = call.execute();
                 if (response != null && response.isSuccessful() && IOUtils.isNotServerFileChanged(response)) {
                     TEMP_FILE_TOTAL_SIZE = EACH_TEMP_SIZE * data.getChildTaskCount();
                     onStart(data.getTotalLength(), data.getCurrentLength(), "", true);
                 } else {
                     prepareRangeFile(response);
                 }
-                saveRangeFile();
+                saveRangeFile(call , response);
             } else {
-                Response response = OkHttpManager.getInstance().initRequest(url);
+                Call call = OkHttpManager.getInstance().initRequest1(url);
+                Response response = call.execute();
                 if (response != null && response.isSuccessful()) {
                     if (IOUtils.isSupportRange(response)) {
                         prepareRangeFile(response);
-                        saveRangeFile();
+                        saveRangeFile(call , response);
                     } else {
                         saveCommonFile(response);
                     }
@@ -144,7 +147,7 @@ public class DownloadFileTask implements Runnable {
     /**
      * 开始断点下载
      */
-    private void saveRangeFile() {
+    private void saveRangeFile(Call cl ,Response response1) {
 
         final File saveFile = IOUtils.createFile(path, name);
         final File tempFile = IOUtils.createFile(path, name + ".temp");
@@ -153,6 +156,18 @@ public class DownloadFileTask implements Runnable {
 
         callList = new ArrayList<>();
 
+//        final int tempI = 0;
+
+        Log.e("tag","1=============");
+//        Call call = OkHttpManager.getInstance().initRequest1(url, range.start[tempI], range.end[tempI]);
+//        Response response = null;
+//        try {
+//            Log.e("tag","2=============");
+//            response = call.execute();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        Log.e("tag","3=============");
         for (int i = 0; i < childTaskCount; i++) {
             final int tempI = i;
             Call call = OkHttpManager.getInstance().initRequest(url, range.start[i], range.end[i], new Callback() {
@@ -168,6 +183,10 @@ public class DownloadFileTask implements Runnable {
             });
             callList.add(call);
         }
+//        callList.add(call);
+//        startSaveRangeFile(response, tempI, range, saveFile, tempFile);
+        Log.e("tag","4=============");
+
 
         while (tempChildTaskCount < childTaskCount) {
             //由于每个文件采用多个异步操作进行，发起多个异步操作后该线程已经结束，但对应文件并未下载完成，
@@ -183,7 +202,7 @@ public class DownloadFileTask implements Runnable {
         RandomAccessFile saveRandomAccessFile = null;
         FileChannel saveChannel = null;
         InputStream inputStream = null;
-
+        Log.e("tag","5=============");
         RandomAccessFile tempRandomAccessFile = null;
         FileChannel tempChannel = null;
 
@@ -199,25 +218,32 @@ public class DownloadFileTask implements Runnable {
             inputStream = response.body().byteStream();
             int len;
             byte[] buffer = new byte[BUFFER_SIZE];
-
+            Log.e("tag","6=============");
             while ((len = inputStream.read(buffer)) != -1) {
+                Log.e("tag","7============="+len);
                 if (IS_CANCEL) {
+                    Log.e("tag","8=============");
                     handler.sendEmptyMessage(Constant.CANCEL);
                     callList.get(index).cancel();
                     break;
                 }
-
+                Log.e("tag","9=============");
                 saveBuffer.put(buffer, 0, len);
+                Log.e("tag","10=============");
                 tempBuffer.putLong(index * EACH_TEMP_SIZE, tempBuffer.getLong(index * EACH_TEMP_SIZE) + len);
+                Log.e("tag","11=============");
                 onProgress(len);
+                Log.e("tag","12=============");
 
                 if (IS_DESTROY) {
+                    Log.e("tag","13=============");
                     handler.sendEmptyMessage(Constant.DESTROY);
                     callList.get(index).cancel();
                     break;
                 }
 
                 if (IS_PAUSE) {
+                    Log.e("tag","14=============");
                     handler.sendEmptyMessage(Constant.PAUSE);
                     callList.get(index).cancel();
                     break;
